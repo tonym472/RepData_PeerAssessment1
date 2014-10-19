@@ -1,5 +1,9 @@
 
 # Reproducible Research: Peer Assessment 1
+```{r setoptions}
+library(knitr) 
+opts_chunk$set(fig.path = "figures/")
+```               
 
 ## Loading and preprocessing the data
 Read in the CSV file and classify columns.

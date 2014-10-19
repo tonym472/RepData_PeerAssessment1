@@ -1,6 +1,11 @@
 
 # Reproducible Research: Peer Assessment 1
 
+```r
+library(knitr) 
+opts_chunk$set(fig.path = "figures/")
+```
+
 ## Loading and preprocessing the data
 Read in the CSV file and classify columns.
 
@@ -18,7 +23,7 @@ datebreaks <- seq(as.Date("2012-10-01"), as.Date("2012-11-30"), by="1 week")
 p 
 ```
 
-![plot of chunk HistPlot](figure/HistPlot.png) 
+![plot of chunk HistPlot](figures/HistPlot.png) 
 
 2. Calculate and report the mean and median total number of steps taken per day
 
@@ -105,7 +110,7 @@ activity3 <- ddply(activity2, c("interval"), na.rm = FALSE, summarise, avg = mea
 plot(activity3$interval, activity3$avg, type="l")
 ```
 
-![plot of chunk Plot1](figure/Plot1.png) 
+![plot of chunk Plot1](figures/Plot1.png) 
 
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
@@ -175,7 +180,7 @@ p <- ggplot(activity3, aes(x=date, y=steps)) + geom_histogram(stat='identity', p
 p 
 ```
 
-![plot of chunk MissingVals3](figure/MissingVals3.png) 
+![plot of chunk MissingVals3](figures/MissingVals3.png) 
 
 ```r
 library(doBy)
@@ -284,11 +289,11 @@ weekday2 <- ddply(weekday, c("interval"), na.rm = FALSE, summarise, avg = mean(s
 plot(weekday2$interval, weekday2$avg, type="l")
 ```
 
-![plot of chunk Weekdays3](figure/Weekdays31.png) 
+![plot of chunk Weekdays3](figures/Weekdays31.png) 
 
 ```r
 weekend2 <- ddply(weekend, c("interval"), na.rm = FALSE, summarise, avg = mean(steps))
 plot(weekend2$interval, weekend2$avg, type="l")
 ```
 
-![plot of chunk Weekdays3](figure/Weekdays32.png) 
+![plot of chunk Weekdays3](figures/Weekdays32.png) 
