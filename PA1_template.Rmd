@@ -1,25 +1,126 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
 
+# Reproducible Research: Peer Assessment 1
 
 ## Loading and preprocessing the data
-
-
-
+Read in the CSV file and classify columns.
+```{r Readin, echo=TRUE}
+activity <- read.csv("activity.csv", colClasses = c("numeric","Date","numeric"))
+```
 ## What is mean total number of steps taken per day?
+1. Create a Histogram Utilizing ggplot2.  Plot total number of steps taken per day.
 
+```{r HistPlot, echo=TRUE}
+library(ggplot2)
+p <- ggplot(activity, aes(x=date, y=steps)) + geom_histogram(stat='identity', position='dodge')
+datebreaks <- seq(as.Date("2012-10-01"), as.Date("2012-11-30"), by="1 week")
+p 
+```
 
+2. Calculate and report the mean and median total number of steps taken per day
+
+```{r MeanCalc, echo=TRUE}
+library(doBy)
+summaryBy(steps ~ date, data = activity, 
+          FUN = list(mean, max, min, median, sd))
+```
 
 ## What is the average daily activity pattern?
+1. Create as Time Series plot of of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis).
 
+```{r Plot1, echo=TRUE}
+library(plyr)
+activity2 <- na.omit(activity)
+activity3 <- ddply(activity2, c("interval"), na.rm = FALSE, summarise, avg = mean(steps))
+plot(activity3$interval, activity3$avg, type="l")
+```
 
+2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+A.  Maximun number of steps is:
+```{r Interval1, echo=TRUE}
+max(activity3$avg)
+```
+B. The 5-minute interval with the maximun number of steps is:
+```{r Interval2, echo=TRUE}
+activity3 <- activity3[order(-activity3$avg),]
+activity3[1, ]
+```
 
 ## Imputing missing values
 
+1.  Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
 
+```{r MissingVals, echo=TRUE}
+length(activity[is.na(activity)])
+```
 
+2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+This code chunk will replace NA's with the mean.
+```{r MissingVals2, echo=TRUE}
+library(plyr)
+impute.med <- function(steps) replace(steps, is.na(steps), mean(steps, na.rm = TRUE))
+dat2 <- sapply(activity, function(steps){
+    if(is.numeric(steps)){
+            impute.med(steps)
+        } else {
+            steps
+        }
+    }
+)
+```
+
+This code chunk will create a data frame with replaced NA's and binds the date.
+```{r MissingVals3, echo=TRUE}
+library(data.table)
+activity2 <- data.frame(dat2)
+
+activity2a <- activity2[c(1, 3)]
+activitya <- activity[c(2)]
+
+activity3 <- cbind(activity2a, activitya)
+
+p <- ggplot(activity3, aes(x=date, y=steps)) + geom_histogram(stat='identity', position='dodge')
+p 
+
+library(doBy)
+summaryBy(steps ~ date, data = activity3, 
+          FUN = list(mean, median))
+```          
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r Weekdays, echo=TRUE}
+activity3$day <- weekdays(activity3$date)
+
+activity3 = within(activity3,
+{
+        Week = as.factor( 
+                ifelse(
+                        (activity3$day) 
+                        %in% c("Saturday","Sunday") 
+                , "weekend", "weekday"
+        )
+)
+}
+)
+```
+
+Subset the data into two data frames.  One for weekends and one for weekdays.
+
+```{r Weekdays2, echo=TRUE}
+weekend <- subset(activity3, day=="Saturday" | day=="Sunday")
+weekday <- subset(activity3, day=="Monday" | day=="Tuesday" | day=="Wednesday" | day=="Thursday" | day == "Friday")
+```
+
+Plot the weekend and weekday data frames for comparison.
+
+```{r Weekdays3, echo=TRUE}                  
+library(plyr)
+
+weekday2 <- ddply(weekday, c("interval"), na.rm = FALSE, summarise, avg = mean(steps))
+plot(weekday2$interval, weekday2$avg, type="l")
+
+weekend2 <- ddply(weekend, c("interval"), na.rm = FALSE, summarise, avg = mean(steps))
+plot(weekend2$interval, weekend2$avg, type="l")
+
+```
